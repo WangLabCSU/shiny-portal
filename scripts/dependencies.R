@@ -83,6 +83,27 @@ if (length(github_packages) > 0) {
   }
   library(remotes)
   
+  # 辅助函数：尝试安装包，返回是否成功
+  try_install <- function(install_expr, error_msg) {
+    success <- FALSE
+    tryCatch({
+      withCallingHandlers({
+        install_expr
+        success <<- TRUE
+      }, warning = function(w) {
+        message(sprintf("Warning during install: %s", w$message))
+        if (grepl("download|failed|error", w$message, ignore.case = TRUE)) {
+          success <<- FALSE
+          invokeRestart("muffleWarning")
+        }
+      })
+    }, error = function(e) {
+      message(sprintf("%s: %s", error_msg, e$message))
+      success <<- FALSE
+    })
+    return(success)
+  }
+  
   for (pkg in github_packages) {
     pkg_name <- sub(".*/", "", sub("#.*", "", sub("@.*", "", pkg)))
     if (!pkg_name %in% rownames(installed.packages(lib.loc = install_path))) {
@@ -98,34 +119,23 @@ if (length(github_packages) > 0) {
         }
         
         message(sprintf("Trying GitHub first for %s...", pkg_name))
-        result <- tryCatch({
-          install_github(pkg, lib = install_path)
-          TRUE
-        }, error = function(e) {
-          message(sprintf("GitHub install failed: %s", e$message))
-          FALSE
-        })
+        success <- try_install(
+          install_github(pkg, lib = install_path),
+          "GitHub install failed"
+        )
         
-        if (!result) {
+        if (!success) {
           message("Trying Gitee fallback...")
-          result <- tryCatch({
-            install_git(gitee_url, lib = install_path)
-            TRUE
-          }, error = function(e) {
-            message(sprintf("Gitee install also failed: %s", e$message))
-            FALSE
-          })
+          success <- try_install(
+            install_git(gitee_url, lib = install_path),
+            "Gitee install also failed"
+          )
         }
-        
-        success <- result
       } else {
-        success <- tryCatch({
-          install_github(pkg, lib = install_path)
-          TRUE
-        }, error = function(e) {
-          message(sprintf("GitHub install failed: %s", e$message))
-          FALSE
-        })
+        success <- try_install(
+          install_github(pkg, lib = install_path),
+          "GitHub install failed"
+        )
       }
       
       if (!success) {
