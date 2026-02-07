@@ -3,19 +3,16 @@
 # 配置 Ubuntu 中国镜像源
 echo "Configuring Ubuntu China mirror..."
 
-# 使用 sed 替换所有源文件中的 URL
-sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' /etc/apt/sources.list
-sed -i 's|http://security.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' /etc/apt/sources.list
+# 直接覆盖 sources.list 为阿里云镜像
+cat > /etc/apt/sources.list << 'EOF'
+deb http://mirrors.aliyun.com/ubuntu/ noble main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ noble-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ noble-backports main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ noble-security main restricted universe multiverse
+EOF
 
-# 同时处理 sources.list.d 目录下的文件
-if [ -d "/etc/apt/sources.list.d" ]; then
-    for file in /etc/apt/sources.list.d/*.list; do
-        if [ -f "$file" ]; then
-            sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' "$file"
-            sed -i 's|http://security.ubuntu.com/ubuntu|http://mirrors.aliyun.com/ubuntu|g' "$file"
-        fi
-    done
-fi
+# 清空 sources.list.d 目录（防止其他源覆盖）
+rm -f /etc/apt/sources.list.d/*.list
 
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y --no-install-recommends \
