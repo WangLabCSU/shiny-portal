@@ -1,0 +1,9 @@
+# Logs
+logs/
+apps/shiny_logs/
+
+# R packages
+r-libs/
+
+# Docker
+.DS_Store
