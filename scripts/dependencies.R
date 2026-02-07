@@ -86,17 +86,58 @@ if (length(github_packages) > 0) {
   for (pkg in github_packages) {
     pkg_name <- sub(".*/", "", sub("#.*", "", sub("@.*", "", pkg)))
     if (!pkg_name %in% rownames(installed.packages(lib.loc = install_path))) {
-      message(sprintf("Installing GitHub package: %s", pkg))
-      tryCatch({
-        install_github(pkg, lib = install_path)
-      }, error = function(e) {
-        message(sprintf("GitHub install failed, trying Gitee fallback for %s...", pkg_name))
-        if (pkg_name == "gganatogram") {
+      message(sprintf("Installing package: %s", pkg_name))
+      
+      installed <- FALSE
+      
+      if (pkg_name == "gganatogram") {
+        message("Trying Gitee first for gganatogram...")
+        tryCatch({
           install_git("https://gitee.com/XenaShiny/gganatogram", lib = install_path)
-        } else if (pkg_name == "ggradar") {
-          install_git("https://gitee.com/XenaShiny/ggradar", lib = install_path)
+          installed <- TRUE
+        }, error = function(e) {
+          message(sprintf("Gitee install failed: %s", e$message))
+        })
+        
+        if (!installed) {
+          message("Trying GitHub fallback...")
+          tryCatch({
+            install_github(pkg, lib = install_path)
+            installed <- TRUE
+          }, error = function(e) {
+            message(sprintf("GitHub install also failed: %s", e$message))
+          })
         }
-      })
+      } else if (pkg_name == "ggradar") {
+        message("Trying Gitee first for ggradar...")
+        tryCatch({
+          install_git("https://gitee.com/XenaShiny/ggradar", lib = install_path)
+          installed <- TRUE
+        }, error = function(e) {
+          message(sprintf("Gitee install failed: %s", e$message))
+        })
+        
+        if (!installed) {
+          message("Trying GitHub fallback...")
+          tryCatch({
+            install_github(pkg, lib = install_path)
+            installed <- TRUE
+          }, error = function(e) {
+            message(sprintf("GitHub install also failed: %s", e$message))
+          })
+        }
+      } else {
+        tryCatch({
+          install_github(pkg, lib = install_path)
+          installed <- TRUE
+        }, error = function(e) {
+          message(sprintf("GitHub install failed: %s", e$message))
+        })
+      }
+      
+      if (!installed) {
+        warning(sprintf("Failed to install %s from both sources!", pkg_name), immediate. = TRUE)
+      }
     }
   }
 }
