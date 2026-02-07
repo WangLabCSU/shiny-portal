@@ -23,7 +23,7 @@ cat /etc/apt/sources.list
 
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y --no-install-recommends \
-    cmake libgmp3-dev libmpfr-dev jags \
+    cmake libgmp3-dev libmpfr-dev jags git \
     && rm -rf /var/lib/apt/lists/*
 
 R_SCRIPT="/scripts/dependencies.R"
