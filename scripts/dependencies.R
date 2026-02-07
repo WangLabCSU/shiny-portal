@@ -10,6 +10,7 @@ cran_packages <- c(
   "ggplot2",
   "cowplot",
   "patchwork",
+  "ggpolypath",
   "ggpubr",
   "plotly",
   "UpSetR",
@@ -111,6 +112,8 @@ if (length(github_packages) > 0) {
       
       success <- FALSE
       
+      # 实在有问题可以进入容器安装
+      # docker exec -it -u shiny shiny-server bash
       if (pkg_name == "gganatogram" || pkg_name == "ggradar") {
         gitee_url <- if (pkg_name == "gganatogram") {
           "https://gitee.com/XenaShiny/gganatogram"
@@ -169,6 +172,21 @@ if ("UCSCXenaTools" %in% rownames(installed.packages())) {
     }, error = function(e) {
       warning("UCSCXenaTools <1.4.4, this shiny has a known issue (the download button cannot be used) to work with it. Please update this package!", immediate. = TRUE)
     })
+  }
+}
+
+message("Checking dplyr version...")
+if ("dplyr" %in% rownames(installed.packages())) {
+  if (packageVersion("dplyr") < "1.2.0") {
+    message("Updating dplyr to version >= 1.2.0 (required by ggstatsplot)...")
+    tryCatch({
+      install.packages("dplyr", repos = "https://cran.rstudio.com/", lib = install_path)
+      message("dplyr updated successfully!")
+    }, error = function(e) {
+      warning(sprintf("Failed to update dplyr: %s", e$message), immediate. = TRUE)
+    })
+  } else {
+    message(sprintf("dplyr version %s is OK (>= 1.2.0)", packageVersion("dplyr")))
   }
 }
 
