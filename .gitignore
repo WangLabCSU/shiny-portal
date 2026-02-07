@@ -7,3 +7,6 @@ r-libs/
 
 # Docker
 .DS_Store
+
+# Xena
+xena

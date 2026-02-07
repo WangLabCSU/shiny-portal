@@ -1,7 +1,52 @@
 cran_packages <- c(
+  "pacman",
+  "purrr",
+  "tidyr",
+  "stringr",
+  "magrittr",
+  "R.utils",
+  "data.table",
+  "dplyr",
+  "ggplot2",
+  "cowplot",
+  "patchwork",
+  "ggpubr",
+  "plotly",
+  "UpSetR",
+  "UCSCXenaTools",
+  "UCSCXenaShiny",
+  "shiny",
+  "shinyBS",
+  "shinyjs",
+  "shinyWidgets",
+  "shinyalert",
+  "shinyFiles",
+  "shinyFeedback",
+  "shinythemes",
+  "shinyhelper",
+  "shinycssloaders",
+  "shinydashboard",
+  "shinydashboardPlus",
+  "survival",
+  "survminer",
+  "ezcox",
+  "waiter",
+  "colourpicker",
+  "DT",
+  "fs",
+  "RColorBrewer",
+  "ggcorrplot",
+  "ggstatsplot",
+  "zip",
+  "msigdbr",
+  "slickR",
+  "funkyheatmap",
+  "remotes"
 )
 
 github_packages <- c(
+  "jespermaag/gganatogram",
+  "ricardo-bion/ggradar"
 )
 
 bioconductor_packages <- c(
@@ -37,11 +82,21 @@ if (length(github_packages) > 0) {
     install.packages("remotes", repos = "https://cran.rstudio.com/")
   }
   library(remotes)
+  
   for (pkg in github_packages) {
     pkg_name <- sub(".*/", "", sub("#.*", "", sub("@.*", "", pkg)))
     if (!pkg_name %in% rownames(installed.packages(lib.loc = install_path))) {
       message(sprintf("Installing GitHub package: %s", pkg))
-      install_github(pkg, lib = install_path)
+      tryCatch({
+        install_github(pkg, lib = install_path)
+      }, error = function(e) {
+        message(sprintf("GitHub install failed, trying Gitee fallback for %s...", pkg_name))
+        if (pkg_name == "gganatogram") {
+          install_git("https://gitee.com/XenaShiny/gganatogram", lib = install_path)
+        } else if (pkg_name == "ggradar") {
+          install_git("https://gitee.com/XenaShiny/ggradar", lib = install_path)
+        }
+      })
     }
   }
 }
@@ -58,6 +113,18 @@ if (length(bioconductor_packages) > 0) {
     BiocManager::install(to_install, lib = install_path, ask = FALSE)
   } else {
     message("All Bioconductor packages already installed.")
+  }
+}
+
+message("Checking UCSCXenaTools version...")
+if ("UCSCXenaTools" %in% rownames(installed.packages())) {
+  if (packageVersion("UCSCXenaTools") < "1.4.4") {
+    message("Updating UCSCXenaTools to version >= 1.4.4...")
+    tryCatch({
+      install.packages("UCSCXenaTools", repos = "https://cran.rstudio.com/", lib = install_path)
+    }, error = function(e) {
+      warning("UCSCXenaTools <1.4.4, this shiny has a known issue (the download button cannot be used) to work with it. Please update this package!", immediate. = TRUE)
+    })
   }
 }
 
