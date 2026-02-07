@@ -13,10 +13,10 @@ if (dir.exists("/app/xena")){
   # hiplot
   xena.cacheDir = "/app/xena"
   xena.zenodoDir = "/app/xena/zdatasets"
-} else if (dir.exists("/home/data/shiny-server")) {
-  # wanglab
-  xena.cacheDir = "/home/data/shiny-server/xena/cache"
-  xena.zenodoDir = "/home/data/shiny-server/xena/datasets/"
+} else if (dir.exists("/xena")) {
+  # wanglab shiny server docker
+  xena.cacheDir = "/xena/cache"
+  xena.zenodoDir = "/xena/datasets/"
 } else {
   # zhoulab
   xena.cacheDir = "/home/shiny/apps/xena/cache"

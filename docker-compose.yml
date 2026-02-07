@@ -5,11 +5,13 @@ services:
     ports:
       - 3838:3838
     environment:
-      - R_LIBS=/usr/local/lib/R/site-library:/usr/local/lib/R/extra-library
+      - R_LIBS=/usr/local/lib/R/extra-library:/usr/local/lib/R/site-library
     volumes:
        - /home/data/shiny-server/apps:/srv/shiny-server/
        - /home/data/shiny-server/conf:/etc/shiny-server/
        - /home/data/shiny-server/r-libs:/usr/local/lib/R/extra-library
        - /home/data/shiny-server/scripts:/scripts
+       # Xena data
+       - /home/data/shiny-server/xena:/xena
     command: ["/scripts/init.sh", "/init"]
     restart: always

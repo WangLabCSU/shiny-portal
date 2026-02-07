@@ -17,10 +17,6 @@ rm -f /etc/apt/sources.list.d/*.list
 # 强制清理 apt 缓存，确保使用新配置
 rm -rf /var/lib/apt/lists/*
 
-# 显示当前源配置
-echo "Current apt sources:"
-cat /etc/apt/sources.list
-
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y --no-install-recommends \
     cmake libgmp3-dev libmpfr-dev jags git \
