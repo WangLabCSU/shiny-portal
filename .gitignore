@@ -5,6 +5,12 @@ apps/shiny_logs/
 # R packages
 r-libs/
 
+# renv library (cache is shared, but project library should be ignored)
+apps/*/renv/library/
+apps/*/renv/local/
+apps/*/renv/cellar/
+apps/*/renv/staging/
+
 # Docker
 .DS_Store
 

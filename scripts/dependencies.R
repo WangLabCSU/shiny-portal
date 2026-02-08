@@ -42,7 +42,8 @@ cran_packages <- c(
   "msigdbr",
   "slickR",
   "funkyheatmap",
-  "remotes"
+  "remotes",
+  "renv"
 )
 
 github_packages <- c(
