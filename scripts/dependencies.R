@@ -43,12 +43,21 @@ cran_packages <- c(
   "slickR",
   "funkyheatmap",
   "remotes",
-  "renv"
+  "renv",
+  "bs4Dash",
+  "zip",
+  "duckdb",
+  "dbplyr",
+  "pool",
+  "echarts4r",
+  "readxl",
+  "writexl"
 )
 
 github_packages <- c(
   "jespermaag/gganatogram",
-  "ricardo-bion/ggradar"
+  "ricardo-bion/ggradar",
+  "IOBR/IOBR"
 )
 
 bioconductor_packages <- c(
