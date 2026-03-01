@@ -167,25 +167,27 @@ if (length(github_packages) > 0) {
         } else if (pkg_name == "ggradar") {
           "https://gitee.com/XenaShiny/ggradar"
         } else {
-          "https://gitee.com/ShixiangWang/IOBR"
+          # remotes::install_git("https://ghfast.top/https://github.com/IOBR/IOBR", dependencies = TRUE, lib = "/usr/local/lib/R/extra-library")
+          #"https://gitee.com/ShixiangWang/IOBR"
+          "https://ghfast.top/https://github.com/IOBR/IOBR"
         }
         
         message(sprintf("Trying GitHub first for %s...", pkg_name))
         success <- try_install(
-          install_github(pkg, lib = install_path),
+          install_github(pkg, lib = install_path, dependencies = TRUE),
           "GitHub install failed"
         )
         
         if (!success) {
           message("Trying Gitee fallback...")
           success <- try_install(
-            install_git(gitee_url, lib = install_path),
+            install_git(gitee_url, lib = install_path, dependencies = TRUE),
             "Gitee install also failed"
           )
         }
       } else {
         success <- try_install(
-          install_github(pkg, lib = install_path),
+          install_github(pkg, lib = install_path, dependencies = TRUE),
           "GitHub install failed"
         )
       }
