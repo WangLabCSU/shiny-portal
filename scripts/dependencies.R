@@ -17,6 +17,7 @@ options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/l
 cran_packages <- c(
   "pacman",
   "BiocManager",
+  "showtext",
   "purrr",
   "tidyr",
   "stringr",
@@ -160,11 +161,13 @@ if (length(github_packages) > 0) {
       
       # 实在有问题可以进入容器安装
       # docker exec -it -u shiny shiny-server bash
-      if (pkg_name == "gganatogram" || pkg_name == "ggradar") {
+      if (pkg_name == "gganatogram" || pkg_name == "ggradar" || pkg_name == "IOBR") {
         gitee_url <- if (pkg_name == "gganatogram") {
           "https://gitee.com/XenaShiny/gganatogram"
-        } else {
+        } else if (pkg_name == "ggradar") {
           "https://gitee.com/XenaShiny/ggradar"
+        } else {
+          "https://gitee.com/ShixiangWang/IOBR"
         }
         
         message(sprintf("Trying GitHub first for %s...", pkg_name))
