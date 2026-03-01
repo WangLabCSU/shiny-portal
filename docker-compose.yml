@@ -1,6 +1,6 @@
 services:
   shiny-server:
-    image: rocker/shiny-verse:latest
+    image: rocker/shiny-verse:4.5.2
     container_name: shiny-server
     ports:
       - 3838:3838
