@@ -1,5 +1,22 @@
+# https://packagemanager.posit.co/client/#/repos/bioconductor/setup?bioconductor_version=3.22&snapshot=latest&distribution=ubuntu-24.04
+#
+# CRAN: https://packagemanager.posit.co/client/#/repos/cran/setup
+# 
+# Configure BiocManager to use Posit Package Manager
+options(BioC_mirror = "https://packagemanager.posit.co/bioconductor/latest")
+
+# Configure BiocManager to load its configuration from Package Manager
+options(BIOCONDUCTOR_CONFIG_FILE = "https://packagemanager.posit.co/bioconductor/latest/config.yaml")
+
+# Set the Bioconductor version to prevent defaulting to a newer version
+Sys.setenv("R_BIOC_VERSION" = "3.22")
+
+# Configure a CRAN snapshot compatible with Bioconductor 3.22
+options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest"))
+
 cran_packages <- c(
   "pacman",
+  "BiocManager",
   "purrr",
   "tidyr",
   "stringr",
@@ -61,7 +78,11 @@ github_packages <- c(
 )
 
 bioconductor_packages <- c(
-  "Biobase"
+  "Biobase",
+  "rhdf5",
+  "SpatialExperiment",
+  "GSVA",
+  "clusterProfiler"
 )
 
 install_path <- "/usr/local/lib/R/extra-library"
@@ -84,7 +105,22 @@ install_if_missing <- function(packages, install_fun, ...) {
 
 if (length(cran_packages) > 0) {
   message("Checking CRAN packages...")
-  install_if_missing(cran_packages, install.packages, repos = "https://cran.rstudio.com/")
+  install_if_missing(cran_packages, install.packages)
+}
+
+if (length(bioconductor_packages) > 0) {
+  message("Checking Bioconductor packages...")
+  if (!"BiocManager" %in% rownames(installed.packages())) {
+    install.packages("BiocManager", repos = "https://cran.rstudio.com/")
+  }
+  library(BiocManager)
+  to_install <- bioconductor_packages[!bioconductor_packages %in% rownames(installed.packages(lib.loc = install_path))]
+  if (length(to_install) > 0) {
+    message(sprintf("Installing %d Bioconductor packages: %s", length(to_install), paste(to_install, collapse = ", ")))
+    BiocManager::install(to_install, lib = install_path, ask = FALSE)
+  } else {
+    message("All Bioconductor packages already installed.")
+  }
 }
 
 if (length(github_packages) > 0) {
@@ -158,20 +194,7 @@ if (length(github_packages) > 0) {
   }
 }
 
-if (length(bioconductor_packages) > 0) {
-  message("Checking Bioconductor packages...")
-  if (!"BiocManager" %in% rownames(installed.packages())) {
-    install.packages("BiocManager", repos = "https://cran.rstudio.com/")
-  }
-  library(BiocManager)
-  to_install <- bioconductor_packages[!bioconductor_packages %in% rownames(installed.packages(lib.loc = install_path))]
-  if (length(to_install) > 0) {
-    message(sprintf("Installing %d Bioconductor packages: %s", length(to_install), paste(to_install, collapse = ", ")))
-    BiocManager::install(to_install, lib = install_path, ask = FALSE)
-  } else {
-    message("All Bioconductor packages already installed.")
-  }
-}
+
 
 message("Checking UCSCXenaTools version...")
 if ("UCSCXenaTools" %in% rownames(installed.packages())) {
