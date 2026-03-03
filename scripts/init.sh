@@ -19,7 +19,7 @@ rm -rf /var/lib/apt/lists/*
 
 echo "Installing system dependencies..."
 apt-get update && apt-get install -y --no-install-recommends \
-    cmake libgmp3-dev libmpfr-dev libglpk-dev libxml2-dev libmagick++-dev jags git \
+    cmake libgmp3-dev libmpfr-dev libglpk-dev libxml2-dev libmagick++-dev tcl tk tk-dev jags git \
     && rm -rf /var/lib/apt/lists/*
 
 R_SCRIPT="/scripts/dependencies.R"

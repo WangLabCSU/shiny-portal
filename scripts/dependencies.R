@@ -69,7 +69,9 @@ cran_packages <- c(
   "pool",
   "echarts4r",
   "readxl",
-  "writexl"
+  "writexl",
+  "FactoMineR",
+  "NbClust"
 )
 
 github_packages <- c(
@@ -83,10 +85,16 @@ bioconductor_packages <- c(
   "rhdf5",
   "SpatialExperiment",
   "GSVA",
-  "clusterProfiler"
+  "clusterProfiler",
+  "sva",
+  "maftools",
+  "sigminer",
+  "BSgenome.Hsapiens.UCSC.hg19",
+  "BSgenome.Hsapiens.UCSC.hg38"
 )
 
 install_path <- "/usr/local/lib/R/extra-library"
+# install.packages("FactoMineR", dependencies = TRUE, lib = "/usr/local/lib/R/extra-library")
 
 if (!dir.exists(install_path)) {
   dir.create(install_path, recursive = TRUE, showWarnings = FALSE)
