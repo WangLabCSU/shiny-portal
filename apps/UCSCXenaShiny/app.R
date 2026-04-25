@@ -26,6 +26,8 @@ options(xena.cacheDir = xena.cacheDir, xena.zenodoDir = xena.zenodoDir)
 options(xena.runMode = "server")
 
 library(UCSCXenaShiny)
+message("Check datasets in zenodo path")
+print(dir(xena.zenodoDir))
 
 shiny::shinyAppFile(
   system.file("shinyapp", "App.R", package = "UCSCXenaShiny")
