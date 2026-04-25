@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # Copyright (C) 2021-2024 Xena Shiny Team
-
+options(shiny.autoreload = TRUE)
 # The cache directory and port all should be consistent with
 # configs in Dockerfile.
 
@@ -26,8 +26,11 @@ options(xena.cacheDir = xena.cacheDir, xena.zenodoDir = xena.zenodoDir)
 options(xena.runMode = "server")
 
 library(UCSCXenaShiny)
-message("Check datasets in zenodo path")
-print(dir(xena.zenodoDir))
+message(
+  "Checking datasets in zenodo path: ",
+  length(dir(xena.zenodoDir)),
+  " datasets found"
+)
 
 shiny::shinyAppFile(
   system.file("shinyapp", "App.R", package = "UCSCXenaShiny")

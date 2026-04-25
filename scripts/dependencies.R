@@ -47,6 +47,7 @@ cran_packages <- c(
   "shinycssloaders",
   "shinydashboard",
   "shinydashboardPlus",
+  "watcher",
   "survival",
   "survminer",
   "ezcox",
