@@ -15,6 +15,7 @@ Sys.setenv("R_BIOC_VERSION" = "3.22")
 options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest"))
 
 cran_packages <- c(
+  "pak",
   "pacman",
   "BiocManager",
   "showtext",
@@ -176,6 +177,7 @@ if (length(github_packages) > 0) {
           "https://gitee.com/XenaShiny/ggradar"
         } else {
           # remotes::install_git("https://ghfast.top/https://github.com/IOBR/IOBR", dependencies = TRUE, lib = "/usr/local/lib/R/extra-library")
+          # BiocManager::install("IOBR/IOBR", dependencies = TRUE, lib = "/usr/local/lib/R/extra-library")
           #"https://gitee.com/ShixiangWang/IOBR"
           "https://ghfast.top/https://github.com/IOBR/IOBR"
         }
