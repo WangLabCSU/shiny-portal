@@ -1,0 +1,1 @@
+0 */12 * * * /home/data/shiny-server/crontab/update-packages.sh >> /home/data/shiny-server/crontab/update-packages.log 2>&1

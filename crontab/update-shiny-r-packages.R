@@ -1,0 +1,1 @@
+remotes::install_git("https://ghfast.top/https://github.com/IOBR/IOBR", dependencies = TRUE, lib = "/usr/local/lib/R/extra-library")
