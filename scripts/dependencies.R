@@ -79,6 +79,7 @@ cran_packages <- c(
 github_packages <- c(
   "jespermaag/gganatogram",
   "ricardo-bion/ggradar",
+  "openbiox/UCSCXenaShiny",
   "IOBR/IOBR"
 )
 

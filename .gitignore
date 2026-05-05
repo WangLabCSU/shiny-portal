@@ -20,3 +20,5 @@ xena
 # IOBRportal
 IOBRportal
 iobr-data/
+
+crontab/update-packages.log
