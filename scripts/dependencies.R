@@ -83,7 +83,8 @@ cran_packages <- c(
   "prompter",
   "Polychrome",
   "golem",
-  "Cairo"
+  "Cairo",
+  "digest"
 )
 
 github_packages <- c(
