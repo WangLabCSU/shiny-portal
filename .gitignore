@@ -22,3 +22,8 @@ IOBRportal
 iobr-data/
 
 crontab/update-packages.log
+
+apps/GeneFusionIO
+apps/cancerMicrobiome
+
+databases

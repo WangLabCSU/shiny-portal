@@ -73,7 +73,17 @@ cran_packages <- c(
   "readxl",
   "writexl",
   "FactoMineR",
-  "NbClust"
+  "NbClust",
+  "dygraphs",
+  "attempt",
+  "reactR",
+  "config",
+  "shinipsum",
+  "reactable",
+  "prompter",
+  "Polychrome",
+  "golem",
+  "Cairo"
 )
 
 github_packages <- c(

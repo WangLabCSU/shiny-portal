@@ -16,6 +16,8 @@ services:
        # Xena data
        - /home/data/shiny-server/xena:/xena
        # IOBR data
-       - /home/data/shiny-server/iobr-data:/root/.cache/R/IOBR
+       - /home/data/shiny-server/iobr-data:/root/.local/share/R/IOBR
+       # Common Research databases
+       - /home/data/shiny-server/databases:/databases
     command: ["/scripts/init.sh", "/init"]
     restart: always
