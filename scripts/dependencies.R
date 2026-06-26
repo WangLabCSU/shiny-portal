@@ -17,6 +17,7 @@ options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/l
 cran_packages <- c(
   "pak",
   "pacman",
+  "pkgload",
   "BiocManager",
   "showtext",
   "purrr",
@@ -84,7 +85,13 @@ cran_packages <- c(
   "Polychrome",
   "golem",
   "Cairo",
-  "digest"
+  "digest",
+  "arrow",
+  "circlize",
+  "RSQLite",
+  "DBI",
+  "pROC",
+  "cols4all"
 )
 
 github_packages <- c(
@@ -96,13 +103,17 @@ github_packages <- c(
 
 bioconductor_packages <- c(
   "Biobase",
+  "AnnotationDbi",
   "rhdf5",
+  "org.Hs.eg.db",
   "SpatialExperiment",
   "GSVA",
   "clusterProfiler",
   "sva",
   "maftools",
   "sigminer",
+  "ComplexHeatmap",
+  "InteractiveComplexHeatmap",
   "BSgenome.Hsapiens.UCSC.hg19",
   "BSgenome.Hsapiens.UCSC.hg38"
 )
@@ -250,5 +261,12 @@ if ("dplyr" %in% rownames(installed.packages())) {
     message(sprintf("dplyr version %s is OK (>= 1.2.0)", packageVersion("dplyr")))
   }
 }
+
+message("Checking ImmunoFusion...")
+deps <- remotes::dev_package_deps(pkgdir = "/srv/shiny-server/ImmunoFusion", dependencies = TRUE)
+# 未安装的包
+print(deps$package[is.na(deps$installed)])
+# 版本落后需要更新的
+# deps$package[deps$diff < 0]
 
 message("Dependency installation complete!")

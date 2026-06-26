@@ -26,5 +26,6 @@ crontab/update-packages.log
 apps/GeneFusionIO
 apps/cancerMicrobiome
 apps/TCCIA
+apps/ImmunoFusion
 
 databases
