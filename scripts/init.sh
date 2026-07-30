@@ -36,8 +36,9 @@ apt-get update && apt-get install -y --no-install-recommends \
 R_SCRIPT="/scripts/dependencies.R"
 
 if [ -f "$R_SCRIPT" ]; then
-    echo "Running dependency installation script..."
-    Rscript "$R_SCRIPT"
+    echo "Running dependency installation script as shiny user..."
+    # 以 shiny 用户运行，确保包权限正确
+    su -s /bin/bash shiny -c "Rscript '$R_SCRIPT'"
 else
     echo "Dependency script $R_SCRIPT not found, skipping."
 fi

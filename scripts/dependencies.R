@@ -9,7 +9,7 @@ options(BioC_mirror = "https://packagemanager.posit.co/bioconductor/latest")
 options(BIOCONDUCTOR_CONFIG_FILE = "https://packagemanager.posit.co/bioconductor/latest/config.yaml")
 
 # Set the Bioconductor version to prevent defaulting to a newer version
-Sys.setenv("R_BIOC_VERSION" = "3.22")
+Sys.setenv("R_BIOC_VERSION" = "3.23")
 
 # Configure a CRAN snapshot compatible with Bioconductor 3.22
 options(repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/noble/latest"))
