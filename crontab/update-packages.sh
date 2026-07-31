@@ -7,6 +7,10 @@
 set -uo pipefail
 cd /home/data/shiny-server
 
+# === 配置 ===
+# 是否自动重启有更新的应用（立即生效，但会断开用户连接）
+AUTO_RESTART_UPDATED_APPS=true
+
 # === 工具函数 ===
 
 # 带时间戳的日志输出
@@ -105,13 +109,16 @@ done
 
 # 容器内执行同步检查和安装
 # 注意：docker compose exec 使用 -e VAR=value 传递环境变量
-docker compose exec -T -u shiny -e REPO_INFO="$REPO_INFO" shiny-server Rscript -e '
+# 输出格式：UPDATED_APPS: app1 app2 ... （如果有更新）
+UPDATED_APPS_OUTPUT=$(docker compose exec -T -u shiny -e REPO_INFO="$REPO_INFO" shiny-server Rscript -e '
 log <- function(...) {
   timestamp <- format(Sys.time(), "[%Y-%m-%d %H:%M:%S]")
   cat(timestamp, " ", ..., "\n", sep = "")
 }
 
 repo_info <- Sys.getenv("REPO_INFO", "")
+updated_apps <- c()
+
 if (repo_info == "") {
   log("无 R 包仓库需要检查")
 } else {
@@ -200,6 +207,7 @@ if (repo_info == "") {
             )
             log("  安装完成并验证通过 (commit: ", substr(source_commit, 1, 7), ")")
             install_success <- TRUE
+            updated_apps <- c(updated_apps, repo_name)
             break
           }, error = function(e) {
             log("  包安装成功但无法加载: ", e$message)
@@ -216,7 +224,46 @@ if (repo_info == "") {
     }
   }
 }
-' 2>&1 | sed 's/^/  /'
+
+# 输出更新的应用列表（供宿主机脚本解析）
+if (length(updated_apps) > 0) {
+  cat("UPDATED_APPS:", paste(updated_apps, collapse = " "), "\n")
+}
+' 2>&1)
+
+echo "$UPDATED_APPS_OUTPUT" | sed 's/^/  /'
+
+# 检查是否有更新的应用，并重启
+if [ "$AUTO_RESTART_UPDATED_APPS" = "true" ]; then
+  UPDATED_APPS=$(echo "$UPDATED_APPS_OUTPUT" | grep "^UPDATED_APPS:" | sed 's/^UPDATED_APPS://')
+  
+  if [ -n "$UPDATED_APPS" ]; then
+    log ""
+    log "=== 重启更新的应用 ==="
+    
+    for app_name in $UPDATED_APPS; do
+      log "[$app_name] 正在重启..."
+      
+      # 查找命令行包含应用名的进程并终止
+      # Shiny Server 会自动重启应用
+      PIDS=$(docker compose exec -T shiny-server bash -c '
+        ps aux | grep "'"$app_name"'" | grep -v grep | awk "{print \$2}"
+      ' 2>/dev/null)
+      
+      if [ -n "$PIDS" ]; then
+        for pid in $PIDS; do
+          # 跳过空值
+          [ -z "$pid" ] && continue
+          log "[$app_name] 终止进程 $pid..."
+          docker compose exec -T shiny-server kill $pid 2>&1 || true
+        done
+        log "[$app_name] 已重启（新会话将加载最新代码）"
+      else
+        log "[$app_name] 无运行进程"
+      fi
+    done
+  fi
+fi
 
 log ""
 log "=== 更新远程 R 包（容器内）==="
