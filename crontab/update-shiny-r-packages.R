@@ -1,7 +1,13 @@
 # 仅当 Git 仓库有新 commit 时才安装包
 # 通过比较本地 RemoteSha 和远程最新 commit hash 判断是否需要更新
 
-install_git_if_updated <- function(url, package_name, lib = NULL) {
+# 带时间戳的日志输出
+log <- function(...) {
+  timestamp <- format(Sys.time(), "[%Y-%m-%d %H:%M:%S]")
+  message(timestamp, " ", ...)
+}
+
+install_git_if_updated <- function(url, package_name, lib = NULL, max_attempts = 3) {
   # 检查包是否已安装
   installed <- tryCatch(
     suppressWarnings(packageVersion(package_name, lib.loc = lib)),
@@ -9,9 +15,8 @@ install_git_if_updated <- function(url, package_name, lib = NULL) {
   )
 
   if (is.null(installed)) {
-    message(sprintf("[%s] 包未安装，执行安装...", package_name))
-    remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never")
-    return(invisible(TRUE))
+    log("[", package_name, "] 包未安装，执行安装...")
+    return(try_install_git(url, package_name, lib, max_attempts))
   }
 
   # 获取本地安装的 RemoteSha
@@ -19,13 +24,12 @@ install_git_if_updated <- function(url, package_name, lib = NULL) {
   local_sha <- desc$RemoteSha
 
   if (is.null(local_sha)) {
-    message(sprintf("[%s] 无法获取本地 commit hash，执行安装...", package_name))
-    remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never")
-    return(invisible(TRUE))
+    log("[", package_name, "] 无法获取本地 commit hash，执行安装...")
+    return(try_install_git(url, package_name, lib, max_attempts))
   }
 
   # 获取远程最新 commit hash
-  message(sprintf("[%s] 检查远程仓库更新...", package_name))
+  log("[", package_name, "] 检查远程仓库更新...")
   remote_sha <- tryCatch({
     # 解析 Git URL 获取远程信息
     if (grepl("github", url, ignore.case = TRUE)) {
@@ -33,20 +37,32 @@ install_git_if_updated <- function(url, package_name, lib = NULL) {
       repo_path <- sub(".*github\\.com[/:]([^/]+/[^/]+).*", "\\1", url)
       repo_path <- sub("\\.git$", "", repo_path)
       api_url <- sprintf("https://api.github.com/repos/%s/commits/HEAD", repo_path)
-      resp <- jsonlite::fromJSON(api_url)
+      
+      # 添加超时和错误处理
+      resp <- tryCatch({
+        # 设置全局超时选项
+        old_timeout <- getOption("timeout")
+        options(timeout = 30)
+        on.exit(options(timeout = old_timeout), add = TRUE)
+        jsonlite::fromJSON(api_url)
+      }, error = function(e) {
+        log("[", package_name, "] GitHub API 请求失败: ", e$message)
+        return(NULL)
+      })
+      
+      if (is.null(resp)) return(NULL)
       resp$sha
     } else {
-      message(sprintf("[%s] 非 GitHub 仓库，跳过版本检查直接安装", package_name))
-      remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never")
-      return(invisible(TRUE))
+      log("[", package_name, "] 非 GitHub 仓库，跳过版本检查直接安装")
+      return(try_install_git(url, package_name, lib, max_attempts))
     }
   }, error = function(e) {
-    message(sprintf("[%s] 无法获取远程 commit: %s", package_name, e$message))
+    log("[", package_name, "] 无法获取远程 commit: ", e$message)
     return(NULL)
   })
 
   if (is.null(remote_sha)) {
-    message(sprintf("[%s] 跳过安装", package_name))
+    log("[", package_name, "] 跳过安装")
     return(invisible(FALSE))
   }
 
@@ -55,14 +71,46 @@ install_git_if_updated <- function(url, package_name, lib = NULL) {
   remote_short <- substr(remote_sha, 1, 7)
 
   if (local_short == remote_short) {
-    message(sprintf("[%s] 版本无更新 (commit: %s)，跳过安装", package_name, local_short))
+    log("[", package_name, "] 版本无更新 (commit: ", local_short, ")，跳过安装")
     return(invisible(FALSE))
   } else {
-    message(sprintf("[%s] 发现新版本 (本地: %s -> 远程: %s)，执行安装...",
-                   package_name, local_short, remote_short))
-    remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never")
-    return(invisible(TRUE))
+    log("[", package_name, "] 发现新版本 (本地: ", local_short, " -> 远程: ", remote_short, ")，执行安装...")
+    return(try_install_git(url, package_name, lib, max_attempts))
   }
+}
+
+# 带重试机制的安装函数
+try_install_git <- function(url, package_name, lib = NULL, max_attempts = 3) {
+  for (attempt in 1:max_attempts) {
+    if (attempt > 1) {
+      log("[", package_name, "] 重试安装 (尝试 ", attempt, "/", max_attempts, ")...")
+      Sys.sleep(5)
+    }
+    
+    result <- tryCatch({
+      remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never", quiet = TRUE)
+      
+      # 安装后验证
+      tryCatch({
+        suppressPackageStartupMessages(
+          library(package_name, lib.loc = lib, character.only = TRUE)
+        )
+        log("[", package_name, "] 安装完成并验证通过")
+        return(invisible(TRUE))
+      }, error = function(e) {
+        log("[", package_name, "] 包安装成功但无法加载: ", e$message)
+        return(invisible(FALSE))
+      })
+    }, error = function(e) {
+      log("[", package_name, "] 安装失败: ", e$message)
+      return(invisible(FALSE))
+    })
+    
+    if (result) return(invisible(TRUE))
+  }
+  
+  log("[", package_name, "] 安装最终失败，将在下次 crontab 运行时重试")
+  return(invisible(FALSE))
 }
 
 # 设置库路径
@@ -78,6 +126,8 @@ packages <- list(
 for (pkg in packages) {
   install_git_if_updated(url = pkg$url, package_name = pkg$name, lib = lib_path)
 }
+
+log("远程 R 包更新检查完成")
 
 # 注意：本地 Git 仓库（如 ImmunoFusion）的 pull 操作由宿主机脚本
 # crontab/update-packages.sh 执行，以保证文件所有权正确。
