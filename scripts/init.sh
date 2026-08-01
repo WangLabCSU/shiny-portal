@@ -35,6 +35,12 @@ apt-get update && apt-get install -y --no-install-recommends \
 
 R_SCRIPT="/scripts/dependencies.R"
 
+# 创建应用缓存目录并设置权限（shiny 用户可写）
+echo "Creating app cache directories..."
+mkdir -p /srv/shiny-server/TCCIA/app_cache
+chown -R shiny:shiny /srv/shiny-server/TCCIA/app_cache
+# 其他需要缓存的应用也可在此添加
+
 if [ -f "$R_SCRIPT" ]; then
     echo "Running dependency installation script as shiny user..."
     # 以 shiny 用户运行，确保包权限正确
