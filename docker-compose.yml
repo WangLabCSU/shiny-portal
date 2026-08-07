@@ -8,16 +8,16 @@ services:
       - R_LIBS=/usr/local/lib/R/extra-library:/usr/local/lib/R/site-library
       - RENV_PATHS_ROOT=/usr/local/lib/R/renv-libs
     volumes:
-       - /data/shiny-server/apps:/srv/shiny-server/
-       - /data/shiny-server/conf:/etc/shiny-server/
-       - /data/shiny-server/r-libs:/usr/local/lib/R/extra-library
-       - /data/shiny-server/r-libs/renv-libs:/usr/local/lib/R/renv-libs
-       - /data/shiny-server/scripts:/scripts
+       - /home/data/shiny-server/apps:/srv/shiny-server/
+       - /home/data/shiny-server/conf:/etc/shiny-server/
+       - /home/data/shiny-server/r-libs:/usr/local/lib/R/extra-library
+       - /home/data/shiny-server/r-libs/renv-libs:/usr/local/lib/R/renv-libs
+       - /home/data/shiny-server/scripts:/scripts
        # Xena data
-       - /data/shiny-server/xena:/xena
+       - /home/data/shiny-server/xena:/xena
        # IOBR data
-       - /data/shiny-server/iobr-data:/home/shiny/.local/share/R/IOBR
+       - /home/data/shiny-server/iobr-data:/home/shiny/.local/share/R/IOBR
        # Common Research databases
-       - /data/shiny-server/databases:/databases
+       - /home/data/shiny-server/databases:/databases
     command: ["/scripts/init.sh", "/init"]
     restart: always

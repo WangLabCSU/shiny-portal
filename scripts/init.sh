@@ -42,9 +42,11 @@ chown -R shiny:shiny /srv/shiny-server/TCCIA/app_cache
 # 其他需要缓存的应用也可在此添加
 
 if [ -f "$R_SCRIPT" ]; then
-    echo "Running dependency installation script as shiny user..."
-    # 以 shiny 用户运行，确保包权限正确
-    su -s /bin/bash shiny -c "Rscript '$R_SCRIPT'"
+    echo "Running dependency installation script as root..."
+    # Fix library permissions before install
+    chmod -R 777 /usr/local/lib/R/extra-library 2>/dev/null || true
+    chmod -R 777 /usr/local/lib/R/renv-libs 2>/dev/null || true
+    Rscript "$R_SCRIPT"
 else
     echo "Dependency script $R_SCRIPT not found, skipping."
 fi
