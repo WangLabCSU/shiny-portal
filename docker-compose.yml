@@ -3,7 +3,7 @@ services:
     image: rocker/shiny-verse:4.6.1
     container_name: shiny-server
     ports:
-      - 3838:3838
+      - 3939:3838
     environment:
       - R_LIBS=/usr/local/lib/R/extra-library:/usr/local/lib/R/site-library
       - RENV_PATHS_ROOT=/usr/local/lib/R/renv-libs
