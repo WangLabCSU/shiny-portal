@@ -91,14 +91,16 @@ cran_packages <- c(
   "RSQLite",
   "DBI",
   "pROC",
-  "cols4all"
+  "cols4all",
+  "thematic"
 )
 
 github_packages <- c(
   "jespermaag/gganatogram",
   "ricardo-bion/ggradar",
   "openbiox/UCSCXenaShiny",
-  "IOBR/IOBR"
+  "IOBR/IOBR",
+  "WangLabCSU/PERCEPTIONx"
 )
 
 bioconductor_packages <- c(
