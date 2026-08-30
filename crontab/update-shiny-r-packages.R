@@ -118,7 +118,8 @@ lib_path <- "/usr/local/lib/R/extra-library"
 
 # 安装列表
 packages <- list(
-  list(url = "https://ghfast.top/https://github.com/IOBR/IOBR", name = "IOBR")
+  list(url = "https://ghfast.top/https://github.com/IOBR/IOBR", name = "IOBR"),
+  list(url = "https://ghfast.top/https://github.com/WangLabCSU/PERCEPTIONx", name = "PERCEPTIONx")
   # list(url = "https://ghfast.top/https://github.com/openbiox/UCSCXenaShiny", name = "UCSCXenaShiny")
 )
 
