@@ -21,4 +21,6 @@ options(
 options(PERCEPTIONx.cache_root = "/databases/perceptionx_db")
 # remotes::install_git("https://ghfast.top/https://github.com/WangLabCSU/PERCEPTIONx")
 library(PERCEPTIONx)
+# load_depmap(read = FALSE, mirror = TRUE)
+# load_model(all = TRUE, read = FALSE, mirror = TRUE)
 run_perception_app()
