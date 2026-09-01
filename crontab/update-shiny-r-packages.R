@@ -89,7 +89,13 @@ try_install_git <- function(url, package_name, lib = NULL, max_attempts = 3) {
     
     result <- tryCatch({
       remotes::install_git(url, dependencies = TRUE, lib = lib, upgrade = "never", quiet = TRUE)
-      
+
+      # 安装以 root 执行，恢复 shiny 用户所有权，保证运行时（sass/app_cache
+      # 等）可在包目录内创建缓存
+      system(sprintf("chown -R shiny:shiny %s",
+                     shQuote(file.path(lib, package_name))),
+             ignore.stderr = TRUE)
+
       # 安装后验证
       tryCatch({
         suppressPackageStartupMessages(
@@ -117,18 +123,29 @@ try_install_git <- function(url, package_name, lib = NULL, max_attempts = 3) {
 lib_path <- "/usr/local/lib/R/extra-library"
 
 # 安装列表
+# restart = TRUE：该包有对应的 Shiny 应用，更新后需终止旧 worker 让新代码生效
+#（宿主机脚本解析 UPDATED_APPS 输出并 kill 对应进程）
 packages <- list(
-  list(url = "https://ghfast.top/https://github.com/IOBR/IOBR", name = "IOBR"),
-  list(url = "https://ghfast.top/https://github.com/WangLabCSU/PERCEPTIONx", name = "PERCEPTIONx")
+  list(url = "https://ghfast.top/https://github.com/IOBR/IOBR", name = "IOBR", restart = FALSE),
+  list(url = "https://ghfast.top/https://github.com/WangLabCSU/PERCEPTIONx", name = "PERCEPTIONx", restart = TRUE)
   # list(url = "https://ghfast.top/https://github.com/openbiox/UCSCXenaShiny", name = "UCSCXenaShiny")
 )
 
-# 执行安装检查
+# 执行安装检查；记录成功安装且需要重启的包
+updated_apps <- c()
 for (pkg in packages) {
-  install_git_if_updated(url = pkg$url, package_name = pkg$name, lib = lib_path)
+  ok <- install_git_if_updated(url = pkg$url, package_name = pkg$name, lib = lib_path)
+  if (isTRUE(ok) && isTRUE(pkg$restart)) {
+    updated_apps <- c(updated_apps, pkg$name)
+  }
 }
 
 log("远程 R 包更新检查完成")
+
+# 输出更新的应用列表（供宿主机 update-packages.sh 解析并重启对应应用）
+if (length(updated_apps) > 0) {
+  cat("UPDATED_APPS:", paste(updated_apps, collapse = " "), "\n")
+}
 
 # 注意：本地 Git 仓库（如 ImmunoFusion）的 pull 操作由宿主机脚本
 # crontab/update-packages.sh 执行，以保证文件所有权正确。

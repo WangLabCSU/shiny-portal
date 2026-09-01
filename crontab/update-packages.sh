@@ -233,23 +233,34 @@ if (length(updated_apps) > 0) {
 
 echo "$UPDATED_APPS_OUTPUT" | sed 's/^/  /'
 
+log ""
+log "=== 更新远程 R 包（容器内）==="
+# 远程 Git 包（如 PERCEPTIONx/IOBR）成功安装后会在输出中附带 UPDATED_APPS 行
+REMOTE_OUTPUT=$(cat /home/data/shiny-server/crontab/update-shiny-r-packages.R | docker compose exec -T shiny-server Rscript - 2>&1)
+echo "$REMOTE_OUTPUT" | sed 's/^/  /'
+# 合并两个阶段的输出（本地同步 + 远程包），统一触发应用重启
+UPDATED_APPS_OUTPUT="$UPDATED_APPS_OUTPUT
+$REMOTE_OUTPUT"
+
 # 检查是否有更新的应用，并重启
+# （放在远程包更新之后：ImmunoFusion 同步与远程包安装统一处理，
+#   否则 PERCEPTIONx 等远程包更新后旧 worker 不会终止，网站仍是旧代码）
 if [ "$AUTO_RESTART_UPDATED_APPS" = "true" ]; then
-  UPDATED_APPS=$(echo "$UPDATED_APPS_OUTPUT" | grep "^UPDATED_APPS:" | sed 's/^UPDATED_APPS://')
-  
+  UPDATED_APPS=$(echo "$UPDATED_APPS_OUTPUT" | grep "^UPDATED_APPS:" | sed 's/^UPDATED_APPS://' | sort -u)
+
   if [ -n "$UPDATED_APPS" ]; then
     log ""
     log "=== 重启更新的应用 ==="
-    
+
     for app_name in $UPDATED_APPS; do
       log "[$app_name] 正在重启..."
-      
+
       # 查找命令行包含应用名的进程并终止
       # Shiny Server 会自动重启应用
       PIDS=$(docker compose exec -T shiny-server bash -c '
         ps aux | grep "'"$app_name"'" | grep -v grep | awk "{print \$2}"
       ' 2>/dev/null)
-      
+
       if [ -n "$PIDS" ]; then
         for pid in $PIDS; do
           # 跳过空值
@@ -264,9 +275,5 @@ if [ "$AUTO_RESTART_UPDATED_APPS" = "true" ]; then
     done
   fi
 fi
-
-log ""
-log "=== 更新远程 R 包（容器内）==="
-cat /home/data/shiny-server/crontab/update-shiny-r-packages.R | docker compose exec -T shiny-server Rscript -
 
 log "=== 完成 ==="
